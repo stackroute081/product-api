@@ -50,6 +50,52 @@ describe("GET /products/:id", function () {
   });
 });
 
+describe("DELETE /products/:id", function () {
+  test("returns the deleted product and removes it from the catalog", async function () {
+    // Arrange - product with id 1 exists in seed data
+
+    // Act
+    const response = await request(app).delete("/products/1");
+    const productCheck = await request(app).get("/products/1");
+    const listCheck = await request(app).get("/products");
+
+    // Assert
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data).toEqual({ id: 1, name: "Laptop", price: 75000 });
+    expect(productCheck.status).toBe(404);
+    expect(listCheck.status).toBe(200);
+    expect(listCheck.body.data).toHaveLength(1);
+    expect(listCheck.body.data.some(function (product) {
+      return product.id === 1;
+    })).toBe(false);
+  });
+
+  test("returns 404 when product does not exist", async function () {
+    // Arrange - product with id 99 does not exist
+
+    // Act
+    const response = await request(app).delete("/products/99");
+
+    // Assert
+    expect(response.status).toBe(404);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error.code).toBe("NOT_FOUND");
+  });
+
+  test("returns 400 when id is not a number", async function () {
+    // Arrange - id is not numeric
+
+    // Act
+    const response = await request(app).delete("/products/abc");
+
+    // Assert
+    expect(response.status).toBe(400);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error.code).toBe("INVALID_ID");
+  });
+});
+
 describe("PUT /products/:id", function () {
   test("returns 200 and updates the product", async function () {
     // Arrange - product with id 1 exists in seed data

@@ -26,6 +26,24 @@ router.get("/:id", function (req, res) {
   return sendSuccess(res, 200, product);
 });
 
+// DELETE /products/:id - Delete a product
+router.delete("/:id", function (req, res) {
+  const id = Number(req.params.id);
+  if (Number.isNaN(id)) {
+    return sendError(res, 400, "INVALID_ID", "id must be a number");
+  }
+
+  const productIndex = products.findIndex(function (item) {
+    return item.id === id;
+  });
+  if (productIndex === -1) {
+    return sendError(res, 404, "NOT_FOUND", "Product " + id + " not found");
+  }
+
+  const deletedProduct = products.splice(productIndex, 1)[0];
+  return sendSuccess(res, 200, deletedProduct);
+});
+
 // PUT /products/:id - Update a product
 router.put("/:id", function (req, res) {
   const id = Number(req.params.id);
